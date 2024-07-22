@@ -1232,6 +1232,10 @@ public final class NativeCrypto {
 
     static native void SSL_accept_renegotiations(long ssl, NativeSsl ssl_holder) throws SSLException;
 
+    static native int SSL_get_security_level(long ssl, NativeSsl ssl_holder);
+
+    static native void SSL_set_security_level(long ssl, NativeSsl ssl_holder, int level);
+
     static native void SSL_set_tlsext_host_name(long ssl, NativeSsl ssl_holder, String hostname)
             throws SSLException;
     static native String SSL_get_servername(long ssl, NativeSsl ssl_holder);

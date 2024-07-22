@@ -31,7 +31,7 @@ publishing {
                     developer {
                         id = 'tongsuo'
                         name = 'Tongsuo Project Authors'
-                        email = 'zhangchenglong@tongsuo.net'
+                        email = 'tongsuo-dev@tongsuo.net'
                         url = 'https://www.tongsuo.net/'
                         organization = 'Tongsuo Project'
                         organizationUrl = 'https://github.com/Tongsuo-Project'

@@ -7,13 +7,13 @@ described below.
 Then to build, run:
 
 ```bash
-$ ./gradlew build -PtongsuoHome=/opt/tongsuo -PjdkHome=/path/to/jdk
+$ ./gradlew build -PtongsuoHome=/opt/tongsuo
 ```
 
 To publish the artifacts to your Maven local repository for use in your own project, run:
 
 ```bash
-$ ./gradlew publishToMavenLocal -PtongsuoHome=/opt/tongsuo -PjdkHome=/path/to/jdk
+$ ./gradlew publishToMavenLocal -PtongsuoHome=/opt/tongsuo
 ```
 
 Prerequisites
@@ -29,10 +29,11 @@ The build requires that you have the `JAVA_HOME` environment variable pointing t
 Download Tongsuo and then build as follows:
 
 ```bash
-wget https://github.com/Tongsuo-Project/Tongsuo/releases/download/8.3.2/BabaSSL-8.3.2.tar.gz
-tar xzvf BabaSSL-8.3.2.tar.gz
-cd Tongsuo-8.3.2
-./config no-shared enable-ntls enable-weak-ssl-ciphers --release --prefix=/opt/tongsuo
+git clone https://github.com/Tongsuo-Project/Tongsuo.git
+cd Tongsuo
+git checkout 8.4-stable
+
+./config no-shared enable-ntls enable-weak-ssl-ciphers --release --prefix=/opt/tongsuo --libdir=/opt/tongsuo/lib
 make -j
 make install
 ```
@@ -41,7 +42,7 @@ Running tests
 -------------------------
 
 ```bash
-./gradlew test -PtongsuoHome=/opt/tongsuo -PjdkHome=/path/to/jdk
+./gradlew test -PtongsuoHome=/opt/tongsuo
 ```
 
 Coverage
@@ -49,7 +50,7 @@ Coverage
 To see coverage numbers, run the tests and then execute the jacocoTestReport rule
 
 ```bash
-./gradlew check jacocoTestReport -PtongsuoHome=/opt/tongsuo -PjdkHome=/path/to/jdk
+./gradlew check jacocoTestReport -PtongsuoHome=/opt/tongsuo
 ```
 
 The report will be placed in `openjdk/build/reports/jacoco/test/html/index.html`

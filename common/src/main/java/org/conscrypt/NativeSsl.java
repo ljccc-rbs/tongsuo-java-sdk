@@ -432,6 +432,10 @@ final class NativeSsl {
 
         setCertificateValidation();
         setTlsChannelId(channelIdPrivateKey);
+
+        if (parameters.getSecurityLevel() != NativeCrypto.SSL_get_security_level(ssl, this)) {
+            NativeCrypto.SSL_set_security_level(ssl, this, parameters.getSecurityLevel());
+        }
     }
 
     void configureServerCertificate() throws IOException {

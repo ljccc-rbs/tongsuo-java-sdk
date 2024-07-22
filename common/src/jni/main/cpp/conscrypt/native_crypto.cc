@@ -33,7 +33,6 @@
 #include <nativehelper/scoped_utf_chars.h>
 
 #include <limits.h>
-#include <sys/time.h>
 
 #include <openssl/asn1.h>
 #include <openssl/asn1t.h>
@@ -56,6 +55,11 @@
 #include <vector>
 #include <set>
 #include <string>
+
+
+#ifndef _WIN32
+# include <sys/time.h>
+#endif
 
 using conscrypt::AppData;
 using conscrypt::BioInputStream;
@@ -4237,7 +4241,7 @@ static jobject GENERAL_NAME_to_jobject(JNIEnv* env, GENERAL_NAME* gen) {
                                                 const_cast<ASN1_STRING *>(value)), XN_FLAG_RFC2253);
         case GEN_IPADD: {
 #ifdef _WIN32
-            void* ip = reinterpret_cast<void*>(ASN1_STRING_get0_data(value));
+            const void* ip = reinterpret_cast<const void*>(ASN1_STRING_get0_data(value));
 #else
             const void* ip = reinterpret_cast<const void*>(ASN1_STRING_get0_data(value));
 #endif
@@ -7876,6 +7880,35 @@ static void NativeCrypto_SSL_accept_renegotiations(JNIEnv* env, jclass, jlong ss
     SSL_clear_options(ssl, SSL_OP_NO_RENEGOTIATION);
 }
 
+static jint NativeCrypto_SSL_get_security_level(JNIEnv* env, jclass, jlong ssl_address,
+                                                CONSCRYPT_UNUSED jobject ssl_holder) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    const SSL* ssl = to_SSL(env, ssl_address, true);
+    JNI_TRACE("ssl=%p NativeCrypto_SSL_get_security_level", ssl);
+    if (ssl == nullptr) {
+        return 0;
+    }
+
+    int level = SSL_get_security_level(ssl);
+    JNI_TRACE("ssl=%p NativeCrypto_SSL_get_security_level => %d", ssl, level);
+    return static_cast<jint>(level);
+}
+
+/**
+ * Sets the security level. If not set the library default security level is used.
+ */
+static void NativeCrypto_SSL_set_security_level(JNIEnv* env, jclass, jlong ssl_address,
+                                                CONSCRYPT_UNUSED jobject ssl_holder, jint level) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    SSL* ssl = to_SSL(env, ssl_address, true);
+    JNI_TRACE("ssl=%p NativeCrypto_SSL_set_security_level level=%x", ssl, level);
+    if (ssl == nullptr) {
+        return;
+    }
+
+    SSL_set_security_level(ssl, static_cast<int>(level));
+}
+
 static void NativeCrypto_SSL_set_tlsext_host_name(JNIEnv* env, jclass, jlong ssl_address,
                                                   CONSCRYPT_UNUSED jobject ssl_holder,
                                                   jstring hostname) {
@@ -10584,6 +10617,8 @@ static JNINativeMethod sNativeCryptoMethods[] = {
         CONSCRYPT_NATIVE_METHOD(SSL_set_session_creation_enabled, "(J" REF_SSL "Z)V"),
         CONSCRYPT_NATIVE_METHOD(SSL_session_reused, "(J" REF_SSL ")Z"),
         CONSCRYPT_NATIVE_METHOD(SSL_accept_renegotiations, "(J" REF_SSL ")V"),
+        CONSCRYPT_NATIVE_METHOD(SSL_get_security_level, "(J" REF_SSL ")I"),
+        CONSCRYPT_NATIVE_METHOD(SSL_set_security_level, "(J" REF_SSL "I)V"),
         CONSCRYPT_NATIVE_METHOD(SSL_set_tlsext_host_name, "(J" REF_SSL "Ljava/lang/String;)V"),
         CONSCRYPT_NATIVE_METHOD(SSL_get_servername, "(J" REF_SSL ")Ljava/lang/String;"),
         CONSCRYPT_NATIVE_METHOD(SSL_do_handshake, "(J" REF_SSL FILE_DESCRIPTOR SSL_CALLBACKS "I)V"),
