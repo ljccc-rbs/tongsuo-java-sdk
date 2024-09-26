@@ -31,11 +31,10 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class NativeSslSessionTest {
     /*
-     * Taken from external/boringssl/src/ssl/ssl_test.cc: kOpenSSLSession is a
-     * serialized SSL_SESSION.
+     * kOpenSSLSession is a serialized SSL_SESSION by Tongsuo.
      */
     private static final byte[] kOpenSSLSession = new byte[] { (byte) 0x30, (byte) 0x82, (byte) 0x05,
-            (byte) 0x4A, (byte) 0x02, (byte) 0x01, (byte) 0x01, (byte) 0x02, (byte) 0x02,
+            (byte) 0x4F, (byte) 0x02, (byte) 0x01, (byte) 0x01, (byte) 0x02, (byte) 0x02,
             (byte) 0x03, (byte) 0x04, (byte) 0x04, (byte) 0x02, (byte) 0x13, (byte) 0x02,
             (byte) 0x04, (byte) 0x20, (byte) 0x14, (byte) 0xBF, (byte) 0xC3, (byte) 0x0A,
             (byte) 0x69, (byte) 0xBE, (byte) 0x6B, (byte) 0xB9, (byte) 0x63, (byte) 0x3A,
@@ -260,7 +259,8 @@ public class NativeSslSessionTest {
             (byte) 0xD0, (byte) 0xA1, (byte) 0xDF, (byte) 0xF8, (byte) 0x12, (byte) 0x36,
             (byte) 0xF1, (byte) 0x54, (byte) 0x53, (byte) 0x46, (byte) 0x3C, (byte) 0x6E,
             (byte) 0xB9, (byte) 0xDD, (byte) 0xAE, (byte) 0x07, (byte) 0x02, (byte) 0x05,
-            (byte) 0x00, (byte) 0xD1, (byte) 0xD5, (byte) 0x0F, (byte) 0xF9,};
+            (byte) 0x00, (byte) 0xD1, (byte) 0xD5, (byte) 0x0F, (byte) 0xF9, (byte) 0xB3,
+            (byte) 0x03, (byte) 0x02, (byte) 0x01, (byte) 0x00,};
 
     private static final byte[] DUMMY_CERT =
             new byte[] {(byte) 0x30, (byte) 0x82, (byte) 0x02, (byte) 0x58, (byte) 0x30,

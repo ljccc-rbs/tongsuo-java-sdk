@@ -106,6 +106,12 @@ final class SSLParametersImpl implements Cloneable {
     private Boolean useSni;
 
     /**
+     * For backward compatibility, in order to set certs with SHA1withRSA signature algorithm.
+     * Maybe changed in the future.
+     */
+    private int secLevel = 0;
+
+    /**
      * Whether the TLS Channel ID extension is enabled. This field is
      * server-side only.
      */
@@ -420,6 +426,14 @@ final class SSLParametersImpl implements Cloneable {
      */
     boolean getUseSni() {
         return useSni != null ? useSni : isSniEnabledByDefault();
+    }
+
+    void setSecurityLevel(int level) {
+        secLevel = level;
+    }
+
+    int getSecurityLevel() {
+        return secLevel;
     }
 
     /**
