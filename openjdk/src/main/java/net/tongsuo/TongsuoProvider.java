@@ -10,6 +10,7 @@
 package net.tongsuo;
 
 import org.conscrypt.OpenSSLProvider;
+import org.conscrypt.NativeCrypto;
 
 public final class TongsuoProvider extends OpenSSLProvider {
 
@@ -24,5 +25,9 @@ public final class TongsuoProvider extends OpenSSLProvider {
         // Register TlcpKeyManagerFactoryImpl and TlcpKeyManagerImpl
         put("KeyManagerFactory.TlcpKeyManagerFactory", TlcpKeyManagerFactoryImpl.class.getName());
         // put("X509ExtendedKeyManager.TlcpKeyManager", TlcpKeyManagerImpl.class.getName());
+    }
+
+    public int setEngine(String name) {
+        return NativeCrypto.setEngine(name);
     }
 }

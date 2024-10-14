@@ -1136,6 +1136,26 @@ public final class NativeCrypto {
         return protocols;
     }
 
+    public static int setEngine(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name == null");
+        }
+
+        long engine = ENGINE_by_id(name);
+        if (engine == 0) {
+            throw new IllegalArgumentException("Engine '" + name + "' not found");
+        }
+
+        if (ENGINE_set_default_string(engine, "ALL") != 1) {
+            ENGINE_free(engine);
+            throw new IllegalArgumentException("Failed to set engine '" + name + "' to default");
+        }
+
+        ENGINE_free(engine);
+
+        return 1;
+    }
+
     static native void SSL_set_cipher_lists(long ssl, NativeSsl ssl_holder, String[] ciphers);
 
     /**
@@ -1526,6 +1546,10 @@ public final class NativeCrypto {
      */
     static native void ENGINE_SSL_shutdown(long ssl, NativeSsl ssl_holder, SSLHandshakeCallbacks shc)
             throws IOException;
+
+    static native long ENGINE_by_id(String id);
+    static native void ENGINE_free(long engineRef);
+    static native int ENGINE_set_default_string(long engineRef, String value);
 
     /**
      * Generates a key from a password and salt using Scrypt.

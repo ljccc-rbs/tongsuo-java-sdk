@@ -387,6 +387,11 @@ model {
                     cppCompiler.define "CONSCRYPT_OPENJDK"
                     def jdkIncludeDir = jniIncludeDir()
                     def libPath = "$tongsuoLibDir"
+                    def tongsuoDynamic = "0"
+
+                    if (rootProject.hasProperty("tongsuoDynamic")) {
+                        tongsuoDynamic = rootProject.property("tongsuoDynamic")
+                    }
 
                     if (toolChain in Clang || toolChain in Gcc) {
                         cppCompiler.args "-Wall",
@@ -405,12 +410,25 @@ model {
                             cppCompiler.define "CONSCRYPT_CHECK_ERROR_QUEUE"
                         }
 
-                        // Static link to Tongsuo
                         linker.args "-O3",
                                 "-fvisibility=hidden",
-                                "-lpthread",
-                                libPath + "/libssl.a",
-                                libPath + "/libcrypto.a"
+                                "-lpthread"
+
+                        if (tongsuoDynamic == "1" || tongsuoDynamic == "true") {
+                            linker.args "-L" + libPath,
+                                    "-lssl",
+                                    "-lcrypto"
+
+                            if (toolChain in Gcc) {
+                                linker.args "-Wl,-rpath=" + libPath
+                            } else if (toolChain in Clang) {
+                                linker.args "-Wl,-rpath," + libPath
+                            }
+                        } else {
+                            linker.args  libPath + "/libssl.a",
+                                    libPath + "/libcrypto.a"
+                        }
+
                         if (targetPlatform.operatingSystem.isLinux()) {
                             // Static link libstdc++ and libgcc because
                             // they are not available in some restrictive Linux
@@ -458,7 +476,6 @@ model {
                                 "-I$jdkIncludeDir",
                                 "-I$jdkIncludeDir/win32"
 
-                        // Static link to Tongsuo
                         linker.args "-WX",
                                 "ws2_32.lib",
                                 "advapi32.lib",

@@ -256,6 +256,15 @@ static SSL_CIPHER* to_SSL_CIPHER(JNIEnv* env, jlong ssl_cipher_address, bool thr
     return ssl_cipher;
 }
 
+static ENGINE* to_ENGINE(JNIEnv* env, jlong engine_address, bool throwIfNull) {
+    ENGINE* engine = reinterpret_cast<ENGINE*>(static_cast<uintptr_t>(engine_address));
+    if ((engine == nullptr) && throwIfNull) {
+        JNI_TRACE("engine == null");
+        conscrypt::jniutil::throwNullPointerException(env, "engine == null");
+    }
+    return engine;
+}
+
 template <typename T>
 static T* fromContextObject(JNIEnv* env, jobject contextObject) {
     if (contextObject == nullptr) {
@@ -10331,6 +10340,72 @@ static jlong NativeCrypto_SSL_get1_session(JNIEnv* env, jclass, jlong ssl_addres
     return reinterpret_cast<uintptr_t>(SSL_get1_session(ssl));
 }
 
+/*
+ * public static native ENGINE* ENGINE_by_id(java.lang.String)
+ */
+static jlong NativeCrypto_ENGINE_by_id(JNIEnv* env, jclass, jstring id) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    JNI_TRACE("NativeCrypto_ENGINE_by_id(%p)", id);
+
+    if (id == nullptr) {
+        conscrypt::jniutil::throwNullPointerException(env, "id == null");
+        return 0;
+    }
+
+    ScopedUtfChars idChars(env, id);
+    if (idChars.c_str() == nullptr) {
+        return 0;
+    }
+    JNI_TRACE("NativeCrypto_ENGINE_by_id(%s)", idChars.c_str());
+
+    ENGINE* eng = ENGINE_by_id(idChars.c_str());
+    if (eng == nullptr) {
+        JNI_TRACE("NativeCrypto_ENGINE_by_id(%s) => NULL", idChars.c_str());
+        return 0;
+    }
+
+    JNI_TRACE("NativeCrypto_ENGINE_by_id(%s) => %p", idChars.c_str(), eng);
+    return reinterpret_cast<uintptr_t>(eng);
+}
+
+static void NativeCrypto_ENGINE_free(JNIEnv* env, jclass, jlong engine_address) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    ENGINE* engine = to_ENGINE(env, engine_address, true);
+    JNI_TRACE("engine=%p NativeCrypto_ENGINE_free", engine);
+
+    if (engine == nullptr) {
+        return;
+    }
+
+    ENGINE_free(engine);
+}
+
+static jint NativeCrypto_ENGINE_set_default_string(JNIEnv* env, jclass, jlong engine_address, jstring list) {
+    CHECK_ERROR_QUEUE_ON_RETURN;
+    ENGINE* engine = to_ENGINE(env, engine_address, true);
+    JNI_TRACE("engine=%p NativeCrypto_ENGINE_set_default_string", engine);
+
+    if (engine == nullptr) {
+        return 0;
+    }
+
+    if (list == nullptr) {
+        conscrypt::jniutil::throwNullPointerException(env, "list == null");
+        return 0;
+    }
+
+    ScopedUtfChars listChars(env, list);
+    if (listChars.c_str() == nullptr) {
+        JNI_TRACE("engine=%p NativeCrypto_ENGINE_set_default_string => listChars == null", engine);
+        return 0;
+    }
+
+    int result = ENGINE_set_default_string(engine, listChars.c_str());
+    JNI_TRACE("engine=%p NativeCrypto_ENGINE_set_default_string(%s) => %d", engine, listChars.c_str(), result);
+
+    return result;
+}
+
 // TESTING METHODS END
 
 #define CONSCRYPT_NATIVE_METHOD(functionName, signature)             \
@@ -10669,6 +10744,9 @@ static JNINativeMethod sNativeCryptoMethods[] = {
         CONSCRYPT_NATIVE_METHOD(ENGINE_SSL_read_BIO_direct, "(J" REF_SSL "JJI" SSL_CALLBACKS ")I"),
         CONSCRYPT_NATIVE_METHOD(ENGINE_SSL_force_read, "(J" REF_SSL SSL_CALLBACKS ")V"),
         CONSCRYPT_NATIVE_METHOD(ENGINE_SSL_shutdown, "(J" REF_SSL SSL_CALLBACKS ")V"),
+        CONSCRYPT_NATIVE_METHOD(ENGINE_by_id, "(Ljava/lang/String;)J"),
+        CONSCRYPT_NATIVE_METHOD(ENGINE_free, "(J)V"),
+        CONSCRYPT_NATIVE_METHOD(ENGINE_set_default_string, "(JLjava/lang/String;)I"),
         CONSCRYPT_NATIVE_METHOD(usesBoringSsl_FIPS_mode, "()Z"),
         CONSCRYPT_NATIVE_METHOD(Scrypt_generate_key, "([B[BIIII)[B"),
 
