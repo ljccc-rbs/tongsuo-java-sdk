@@ -160,15 +160,12 @@ subprojects {
         property("org.conscrypt.version.major", parsedVersion.getMajor())
         property("org.conscrypt.version.minor", parsedVersion.getMinor())
         property("org.conscrypt.version.patch", parsedVersion.getMicro())
-//         property("org.conscrypt.boringssl.version", boringSslVersion)
         outputFile "build/generated/resources/org/conscrypt/conscrypt.properties"
     }
 
     if (!androidProject) {
         java {
             toolchain {
-                // Compile with a real JDK 8 so we don't end up with accidental dependencies
-                // on Java 11 bootclasspath, e.g. ByteBuffer.flip().
                 languageVersion = JavaLanguageVersion.of(11)
             }
         }
@@ -177,6 +174,8 @@ subprojects {
             t.configure {
                 options.compilerArgs += ["-Xlint:all", "-Xlint:-options", '-Xmaxwarns', '9999999']
                 options.encoding = "UTF-8"
+                options.release = 8
+
                 if (rootProject.hasProperty('failOnWarnings') && rootProject.failOnWarnings.toBoolean()) {
                     options.compilerArgs += ["-Werror"]
                 }
@@ -202,13 +201,6 @@ subprojects {
         javadoc.options {
             encoding = 'UTF-8'
             links 'https://docs.oracle.com/javase/8/docs/api/'
-        }
-
-        // All non-Android projects build with Java 8, so disable doclint as it's noisy.
-        allprojects {
-            tasks.withType(Javadoc) {
-                options.addStringOption('Xdoclint:none', '-quiet')
-            }
         }
 
         tasks.register("javadocJar", Jar) {
