@@ -82,7 +82,7 @@ jobs:
         run: |
           pushd ${{ github.workspace }}/Tongsuo
           perl ./config --banner=Configured ${{ matrix.platform.target }} --prefix=$TONGSUO_HOME --libdir=$TONGSUO_HOME/lib enable-weak-ssl-ciphers enable-ntls no-shared \
-                --strict-warnings --release
+                --strict-warnings --release -Wp,-D_FORTIFY_SOURCE=2 -fstack-protector-strong
           make -s -j4
           make install
           popd
@@ -122,6 +122,7 @@ jobs:
           tag_name: ${{ github.event.inputs.version }}
           draft: true
           prerelease: true
+          fail_on_unmatched_files: true
           files: openjdk/build/libs/tongsuo-openjdk-${{ github.event.inputs.version }}-*.jar
 
   build-with-tongsuo-dynamic:
@@ -161,6 +162,12 @@ jobs:
         run: |
           echo "TONGSUO_HOME=${{ runner.temp }}/tongsuo" >> $GITHUB_ENV
 
+      - name: Set runner-specific environment variables for macOS
+        shell: bash
+        if: runner.os == 'macOS'
+        run: |
+          echo "TONGSUO_HOME=/opt/tongsuo" >> $GITHUB_ENV
+
       - uses: actions/checkout@v4
 
       - name: Fetch Tongsuo source
@@ -175,7 +182,7 @@ jobs:
           perl ./config --banner=Configured ${{ matrix.platform.target }} --prefix=$TONGSUO_HOME --libdir=$TONGSUO_HOME/lib enable-weak-ssl-ciphers enable-ntls \
                 --strict-warnings --release
           make -s -j4
-          make install
+          sudo make install
           popd
 
       - uses: ilammy/msvc-dev-cmd@v1
@@ -225,19 +232,33 @@ jobs:
         run: |
           ./gradlew assemble -PcheckErrorQueue -PtongsuoDynamic=1
 
-      - name: Test with Gradle
+      - name: Test with Gradle on Windows or macOS
+        if: runner.os == 'Windows' || runner.os == 'macOS'
         shell: bash
         run: ./gradlew test -PcheckErrorQueue -PtongsuoDynamic=1
 
-      - name: Other checks with Gradle
+      - name: Test with Gradle on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: LD_LIBRARY_PATH=$TONGSUO_HOME/lib:$LD_LIBRARY_PATH ./gradlew test -PcheckErrorQueue -PtongsuoDynamic=1
+
+      - name: Other checks with Gradle on Windows or macOS
+        if: runner.os == 'Windows' || runner.os =='macOS'
         shell: bash
         run: ./gradlew check -PcheckErrorQueue -PtongsuoDynamic=1
+
+      - name: Other checks with Gradle on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: LD_LIBRARY_PATH=$TONGSUO_HOME/lib:$LD_LIBRARY_PATH ./gradlew check -PcheckErrorQueue -PtongsuoDynamic=1
 
       - name: Rename to dynamic jar
         shell: bash
         run: |
-          for file in openjdk/build/libs/tongsuo-openjdk-${{ github.event.inputs.version }}-*.jar; do
-            mv "$file" "${file%.*}-dynamic.jar"
+          cd openjdk/build/libs/
+          for file in tongsuo-openjdk-${{ github.event.inputs.version }}-*.jar; do
+            os_arch_jar=$(echo "$file" | cut -d'-' -f4-)
+            mv "$file" "tongsuo-openjdk-dynamic-${{ github.event.inputs.version }}-${os_arch_jar}"
           done
 
       - name: Release
@@ -247,4 +268,5 @@ jobs:
           tag_name: ${{ github.event.inputs.version }}
           draft: true
           prerelease: true
-          files: openjdk/build/libs/tongsuo-openjdk-${{ github.event.inputs.version }}-*-dynamic.jar
+          fail_on_unmatched_files: true
+          files: openjdk/build/libs/tongsuo-openjdk-dynamic-${{ github.event.inputs.version }}-*.jar

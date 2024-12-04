@@ -185,17 +185,29 @@ jobs:
           add_path("$ENV{RUNNER_TEMP}\\tongsuo\\bin");
           add_path("$ENV{RUNNER_TEMP}\\tongsuo\\lib");
 
-      - name: Build with Gradle based on Tongsuo dynamic library
+      - name: Build with Gradle
         shell: bash
         run: ./gradlew assemble -PcheckErrorQueue -PtongsuoDynamic=1
 
-      - name: Test with Gradle based on Tongsuo dynamic library
+      - name: Test with Gradle on Windows or macOS
+        if: runner.os == 'Windows' || runner.os =='macOS'
         shell: bash
         run: ./gradlew test -PcheckErrorQueue -PtongsuoDynamic=1
 
-      - name: Other checks with Gradle based on Tongsuo dynamic library
+      - name: Test with Gradle on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: LD_LIBRARY_PATH=$TONGSUO_HOME/lib:$LD_LIBRARY_PATH ./gradlew test -PcheckErrorQueue -PtongsuoDynamic=1
+
+      - name: Other checks with Gradle on Windows or macOS
+        if: runner.os == 'Windows' || runner.os =='macOS'
         shell: bash
         run: ./gradlew check -PcheckErrorQueue -PtongsuoDynamic=1
+
+      - name: Other checks with Gradle on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: LD_LIBRARY_PATH=$TONGSUO_HOME/lib:$LD_LIBRARY_PATH ./gradlew check -PcheckErrorQueue -PtongsuoDynamic=1
 
       - name: Build test JAR with dependencies based on Tongsuo dynamic library
         if: runner.os == 'Linux'
