@@ -7,9 +7,13 @@ Take TLS13Client and TLS13Server as an example.
 ## TLS13Client
 
 ```shell
-javac -cp openjdk/build/libs/tongsuo-openjdk-<version>-<os>-<arch>.jar examples/jce/TLS13Client.java
+cd examples/jce
 
-java -cp examples/jce:openjdk/build/libs/tongsuo-openjdk-<version>-<os>-<arch>.jar TLS13Client
+# build
+javac -cp /path/to/tongsuo-openjdk-<version>-<os>-<arch>.jar TLS13Client.java
+
+# run
+java -cp .:/path/to/tongsuo-openjdk-<version>-<os>-<arch>.jar TLS13Client
 ```
 
 ## TLS13Server
@@ -21,7 +25,9 @@ Note: sm2.crt, sm2.key and chain.crt are required to run the server.
 ```shell
 cd examples/jce
 
-javac -cp ~/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69.jar:../../openjdk/build/libs/tongsuo-openjdk-<version>-<os>-<arch>.jar  TLS13Server.java
+# build
+javac -cp /path/to/bcprov-jdk15on-1.69.jar:/path/to/tongsuo-openjdk-<version>-<os>-<arch>.jar  TLS13Server.java
 
-java -cp .:/path/to/user/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69.jar:../../openjdk/build/libs/tongsuo-openjdk-<version>-<os>-<arch>.jar TLS13Server
+# run
+java -cp .:/path/to/bcprov-jdk15on-1.69.jar:/path/to/tongsuo-openjdk-<version>-<os>-<arch>.jar TLS13Server
 ```

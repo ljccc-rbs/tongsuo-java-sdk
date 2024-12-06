@@ -418,12 +418,6 @@ model {
                             linker.args "-L" + libPath,
                                     "-lssl",
                                     "-lcrypto"
-
-                            if (toolChain in Gcc) {
-                                linker.args "-Wl,-rpath=" + libPath
-                            } else if (toolChain in Clang) {
-                                linker.args "-Wl,-rpath," + libPath
-                            }
                         } else {
                             linker.args  libPath + "/libssl.a",
                                     libPath + "/libcrypto.a"
