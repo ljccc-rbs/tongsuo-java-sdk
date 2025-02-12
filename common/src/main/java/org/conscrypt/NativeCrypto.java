@@ -1146,7 +1146,7 @@ public final class NativeCrypto {
 
         long engine = ENGINE_by_id(name);
         if (engine == 0) {
-            throw new IllegalArgumentException("Engine '" + name + "' not found");
+            return 0;
         }
 
         if (ENGINE_set_default_string(engine, "ALL") != 1) {
